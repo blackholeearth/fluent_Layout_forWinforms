@@ -461,6 +461,106 @@ namespace SmartLayoutEngine
 
 			return bar;
 		}
+
+
+
+
+		// --- 12. WINDOWS 11 MODERN BAŞLIK ÇUBUĞU (SetupCustomTitleBar_v1) ---
+		// Yüksekliği ayarlanabilen, içine istenen kontrol yerleştirilebilen, pürüzsüz sürükleme destekli modern başlık
+		public Control SetupCustomTitleBar_v1(string windowTitle, Control centerControl = null, int height = 48)
+		{
+			// A. Uygulama Logosu ve Başlık (Sol taraf)
+			Label lblIcon = new Label
+			{
+				Text = "\uE9D2",// "\uE809", // Görev yöneticisi standart simgesi
+				Font = new Font("Segoe Fluent Icons", 10),
+				AutoSize = true,
+				BackColor = Color.Transparent,
+				ForeColor = Color.FromArgb(32, 32, 32)
+			};
+			if (lblIcon.Font.Name != "Segoe Fluent Icons") lblIcon.Font = new Font("Segoe MDL2 Assets", 10);
+
+			Label lblTitle = new Label
+			{
+				Text = windowTitle,
+				Font = new Font("Segoe UI Semibold", 9f),
+				AutoSize = true,
+				BackColor = Color.Transparent,
+				ForeColor = Color.FromArgb(32, 32, 32)
+			};
+
+			// B. Windows 11 Kapatma, Küçültme, Tam Ekran Butonları (Sağ taraf)
+			Button btnMin = CreateCaptionButton("\uE921", () => _form.WindowState = FormWindowState.Minimized);
+			Button btnMax = CreateCaptionButton("\uE922", () => {
+				_form.WindowState = _form.WindowState == FormWindowState.Maximized ? FormWindowState.Normal : FormWindowState.Maximized;
+			});
+			Button btnClose = CreateCaptionButton("\uE8BB", () => _form.Close(), isClose: true);
+
+			// C. Deklaratif Yerleşim (Tüm elemanlar esnek yaylarla kusursuz hizalanır)
+			Control titleBarGroup = this.Group(
+				this.Group(lblIcon.VAlignMiddle(), this.Space(8), lblTitle.VAlignMiddle()).VAlignMiddle(),
+				this.Spring(), // Sol boşluğu doldurur, merkez kontrolü ortalar
+				centerControl != null ? centerControl.VAlignMiddle() : this.Space(0),
+				this.Spring(), // Sağ boşluğu doldurur
+				this.Group(btnMin.VAlignMiddle(), btnMax.VAlignMiddle(), btnClose.VAlignMiddle()).VAlignMiddle()
+			)
+			.Padding(12, 7, 0,7) // Butonların üst/alta sıfır oturması için dikey padding verilmez
+			.BackColor(Color.FromArgb(243, 243, 243)) // Başlık çubuğu rengi
+			.GrowW();
+
+			titleBarGroup.Height = Scale(height);
+
+			// Sürükleme olaylarını başlık çubuğuna ve içindeki yazılara bağla (Butonlar hariç)
+			MakeDraggable(titleBarGroup);
+			//lblIcon.MouseDown += (s, e) => titleBarGroup.PerformClick(); // Çizim kararlılığı için tık yönlendirici
+			//lblTitle.MouseDown += (s, e) => titleBarGroup.PerformClick();
+			MakeDraggable(lblIcon);
+			MakeDraggable(lblTitle);
+
+			MakeFormResizable_v1();
+
+
+			return titleBarGroup;
+		}
+
+		// --- BAŞLIK ÇUBUĞU PENCERE BUTONU YAPICI ---
+		private Button CreateCaptionButton(string icon, Action onClick, bool isClose = false)
+		{
+			Button btn = new Button
+			{
+				Text = icon,
+				Font = new Font("Segoe Fluent Icons", 8.5f),
+				Width = Scale(46), // Windows 11 standart sistem kontrol butonu genişliği
+				Height = Scale(32),
+				FlatStyle = FlatStyle.Flat,
+				BackColor = Color.Transparent,
+				ForeColor = Color.FromArgb(32, 32, 32)
+			};
+			if (btn.Font.Name != "Segoe Fluent Icons") btn.Font = new Font("Segoe MDL2 Assets", 8.5f);
+			btn.FlatAppearance.BorderSize = 0;
+
+			if (isClose)
+			{
+				btn.HoverBackColor(Color.FromArgb(232, 17, 35)); // Win11 kapatma kırmızısı
+				btn.MouseEnter += (s, e) => btn.ForeColor = Color.White;
+				btn.MouseLeave += (s, e) => btn.ForeColor = Color.FromArgb(32, 32, 32);
+			}
+			else
+			{
+				btn.HoverBackColor(Color.FromArgb(230, 230, 230));
+			}
+
+			if (onClick != null) btn.OnClick(onClick);
+
+			return btn;
+		}
+
+		// --- 🌟 TEK SATIRDA BOYUTLANDIRMA BAĞLANTISI ---
+		public void MakeFormResizable_v1(int borderSize = 8)
+		{
+			// NativeWindow sınıfını arka planda bu formun Hwnd'sine bağlar
+			new SmartFormResizable(_form, borderSize);
+		}
 	}
 
 	// --- 🌟 WINDOWS 11 SEÇİM KUTUSU ÇİZİM SINIFI ---

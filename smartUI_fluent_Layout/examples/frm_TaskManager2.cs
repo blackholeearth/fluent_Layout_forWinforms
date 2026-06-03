@@ -37,49 +37,59 @@ namespace smartUI_fluent_Layout.examples
 			leftSidePanel.BackColor = Color.FromArgb(249, 249, 249);
 			PopulateSidebar(leftSidePanel);
 
-		 
 
-			// --- 2. ÜST ARAMA VE AKSİYON ALANI ---
-			TextBox txtSearch = new TextBox
-			{
-				BorderStyle = BorderStyle.None,
-				Font = new Font("Segoe UI", 9.5f),
-				Width = 260,
-				BackColor = Color.White
-			};
-			// Eklediğiniz managed placeholder desteğiyle arama metnini bağlıyoruz
-			//txtSearch.Placeholder("Aramak için bir ad, yayımcı veya PID girin...");
+			// ---2.ÜST ARAMA VE AKSİYON ALANI ---
+		 //  TextBox txtSearch = new TextBox
+		 //  {
+			//   BorderStyle = BorderStyle.None,
+			//   Font = new Font("Segoe UI", 9.5f),
+			//   Width = 260,
+			//   BackColor = Color.White
+		 //  };
+			//// Eklediğiniz managed placeholder desteğiyle arama metnini bağlıyoruz
+			////txtSearch.Placeholder("Aramak için bir ad, yayımcı veya PID girin...");
 
-			Panel searchContainer = new Panel()
-			{
-				Width = 290,
-				Height = 32,
-				BackColor = Color.White
-			};
-			searchContainer.Rounded(6, Color.FromArgb(218, 218, 218));
+			//Panel searchContainer = new Panel()
+			//{
+			//	Width = 290,
+			//	Height = 32,
+			//	BackColor = Color.White
+			//};
+			//searchContainer.Rounded(6, Color.FromArgb(218, 218, 218));
 
-			txtSearch.Location = new Point(10, 7);
-			searchContainer.Controls.Add(txtSearch);
+			//txtSearch.Location = new Point(10, 7);
+			//searchContainer.Controls.Add(txtSearch);
 
-
-		
-
-			var btnNewTask = CreateHeaderButton("\uE710", "Yeni görevi çalıştır");
-			var btnEndTask = CreateHeaderButton("\uE711", "Görevi sonlandır");
-			var btnEcoMode = CreateHeaderButton(SegoeMDL2Icons.Leaf, "Verimlilik modu");
-			var btnMore = CreateHeaderButton("\uE712", "");
 
 
 			// Solunda büyüteç ikonu hazır gelen arama kutusu
 			Control searchBox = ui.FluentSearchBox_v1("İşlemlerde ara...", width: 280)
 				.Padding(8)
 				.MarginY(4);
-			var searchRow = ui.Row(
-				ui.Spring(),
-				searchBox.VAlignMiddle(),
-				ui.Spring()
-				);
+			//var searchRow = ui.Row(
+			//	ui.Spring(),
+			//	searchBox.VAlignMiddle(),
+			//	ui.Spring()
+			//	);
 
+			this.FormBorderStyle = FormBorderStyle.None;
+			// --- 🌟 2. ADIM: BAŞLIK ÇUBUĞU İÇİN ARAMA KUTUSU OLUŞTURMA ---
+			// Solunda büyüteç ikonu hazır gelen, genişliği 400px olan akıllı arama kutusu
+			Control titleSearch = ui.FluentSearchBox_v1("Aramak için bir ad, yayımcı veya PID girin...", width: 280);
+
+			// --- 🌟 3. ADIM: CUSTOM TALL TITLE BAR KURULUMU ---
+			// Arama kutusunu tam ortasına gömdüğümüz 48px yüksekliğinde modern başlık çubuğu
+			Control customTitleBar = ui.SetupCustomTitleBar_v1("Görev Yöneticisi", titleSearch, height: 48*2);
+
+
+			// Başlık çubuğunu formun en üst satırı (Row 1) olarak deklare ediyoruz
+			ui.Row(customTitleBar.GrowW()).Margin(0);
+
+
+			var btnNewTask = CreateHeaderButton("\uE710", "Yeni görevi çalıştır");
+			var btnEndTask = CreateHeaderButton("\uE711", "Görevi sonlandır");
+			var btnEcoMode = CreateHeaderButton(SegoeMDL2Icons.Leaf, "Verimlilik modu");
+			var btnMore = CreateHeaderButton("\uE712", "");
 
 			var headerRow = ui.Row(
 				ui.Spring(), // Geri kalan elemanları en sağa iter
