@@ -77,13 +77,20 @@ namespace smartUI_fluent_Layout.examples
 			// Solunda büyüteç ikonu hazır gelen, genişliği 400px olan akıllı arama kutusu
 			Control titleSearch = ui.FluentSearchBox_v1("Aramak için bir ad, yayımcı veya PID girin...", width: 280);
 
+			//call before SetupCustomTitleBar_v2
+			ui.MakeFormResizable_v1();
+
 			// --- 🌟 3. ADIM: CUSTOM TALL TITLE BAR KURULUMU ---
 			// Arama kutusunu tam ortasına gömdüğümüz 48px yüksekliğinde modern başlık çubuğu
-			Control customTitleBar = ui.SetupCustomTitleBar_v1("Görev Yöneticisi", titleSearch, height: 48*2);
+			Control customTitleBar = ui.SetupCustomTitleBar_v2("Görev Yöneticisi", titleSearch, height: 48*2);
 
 
 			// Başlık çubuğunu formun en üst satırı (Row 1) olarak deklare ediyoruz
-			ui.Row(customTitleBar.GrowW()).Margin(0);
+			//ui.Row(customTitleBar.GrowW()).Margin(0);
+
+			// ✅ Add the row and make its container transparent
+			var titleBarRow = ui.Row(customTitleBar.GrowW()).Margin(0);
+			new SmartTransparentControlFilter(titleBarRow.Container);
 
 
 			var btnNewTask = CreateHeaderButton("\uE710", "Yeni görevi çalıştır");

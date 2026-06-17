@@ -523,6 +523,147 @@ namespace SmartLayoutEngine
 			return titleBarGroup;
 		}
 
+
+		/// <summary>
+		/// native burron  maximize show snap to tiles
+		/// </summary>
+		private SmartFormResizable _resizableHelper; // 🌟 Sistem referansını hafızada tutuyoruz
+													 // --- 12. WINDOWS 11 MODERN BAŞLIK ÇUBUĞU (SetupCustomTitleBar_v1) ---
+		public Control SetupCustomTitleBar_v2(string windowTitle, Control centerControl = null, int height = 48)
+		{
+			Label lblIcon = new Label
+			{
+				Text = "\uE809",
+				Font = new Font("Segoe Fluent Icons", 10),
+				AutoSize = true,
+				BackColor = Color.Transparent,
+				ForeColor = Color.FromArgb(32, 32, 32)
+			};
+			if (lblIcon.Font.Name != "Segoe Fluent Icons")
+				lblIcon.Font = new Font("Segoe MDL2 Assets", 10);
+
+			Label lblTitle = new Label
+			{
+				Text = windowTitle,
+				Font = new Font("Segoe UI Semibold", 9f),
+				AutoSize = true,
+				BackColor = Color.Transparent,
+				ForeColor = Color.FromArgb(32, 32, 32)
+			};
+
+			Button btnMin = CreateCaptionButton("\uE921", null);
+			Button btnMax = CreateCaptionButton("\uE922", null);
+			Button btnClose = CreateCaptionButton("\uE8BB", null, isClose: true);
+
+			Control leftGroup = this.Group(lblIcon.VAlignMiddle(), this.Space(8), lblTitle.VAlignMiddle()).VAlignMiddle();
+			Control rightGroup = this.Group(btnMin.VAlignMiddle(), btnMax.VAlignMiddle(), btnClose.VAlignMiddle());
+
+			Control titleBarGroup = this.Group(
+				leftGroup,
+				this.Spring(),
+				centerControl != null ? centerControl.MarginY(7) : this.Space(0),
+				this.Spring(),
+				rightGroup
+			)
+			.Padding(12, 0, 0, 0)
+			.BackColor(Color.FromArgb(243, 243, 243))
+			.GrowW();
+
+			titleBarGroup.Height = Scale(height);
+
+			// ============================================================
+			// HIT-TEST TRANSPARENCY — RECURSIVE APPROACH
+			// ============================================================
+
+			// 1. Ana title bar'ı şeffaf yapıyoruz
+			new SmartTransparentControlFilter(titleBarGroup);
+
+			// 2. centerControl (Arama kutusu) HARİÇ tüm çocukları şeffaf yapıyoruz.
+			MakeTitleBarChildrenTransparent(titleBarGroup, centerControl);
+
+			// 3. Eğer başlık çubuğunda bir "hamburger menü" varsa, onu da interactive olarak ekleyin!
+			// Örnek: _resizableHelper?.AddInteractiveControl(hamburgerBtn);
+			if (_resizableHelper != null)
+			{
+				_resizableHelper.BindCaptionControls(titleBarGroup, btnMin, btnMax, btnClose);
+
+				if (centerControl != null)
+					_resizableHelper.AddInteractiveControl(centerControl);
+			}
+
+			return titleBarGroup;
+		}
+		private static void MakeTitleBarChildrenTransparent(Control parent, Control exceptionSubtree)
+		{
+			foreach (Control child in parent.Controls)
+			{
+				if (child == exceptionSubtree) continue;
+
+				// Çocuk kontrolü şeffaf yap (Sürükleme olaylarının Form'a geçmesi için)
+				new SmartTransparentControlFilter(child);
+
+				// İç içe olan çocukları da recursive olarak şeffaf yap
+				MakeTitleBarChildrenTransparent(child, exceptionSubtree);
+			}
+		}
+
+		public Control SetupCustomTitleBar_v2_old(string windowTitle, Control centerControl = null, int height = 48)
+		{
+			Label lblIcon = new Label { Text = "\uE809", Font = new Font("Segoe Fluent Icons", 10), AutoSize = true, BackColor = Color.Transparent, ForeColor = Color.FromArgb(32, 32, 32) };
+			if (lblIcon.Font.Name != "Segoe Fluent Icons") lblIcon.Font = new Font("Segoe MDL2 Assets", 10);
+			Label lblTitle = new Label { Text = windowTitle, Font = new Font("Segoe UI Semibold", 9f), AutoSize = true, BackColor = Color.Transparent, ForeColor = Color.FromArgb(32, 32, 32) };
+
+			Button btnMin = CreateCaptionButton("\uE921", null);
+			Button btnMax = CreateCaptionButton("\uE922", null);
+			Button btnClose = CreateCaptionButton("\uE8BB", null, isClose: true);
+
+			Control titleBarGroup = this.Group(
+				this.Group(lblIcon.VAlignMiddle(), this.Space(8), lblTitle.VAlignMiddle()).VAlignMiddle(),
+				this.Spring(),
+				centerControl != null ? centerControl.MarginY(7) : this.Space(0),
+				this.Spring(),
+				this.Group(btnMin.VAlignMiddle(), btnMax.VAlignMiddle(), btnClose.VAlignMiddle())
+			)
+			.Padding(12, 0, 0, 0)
+			.BackColor(Color.FromArgb(243, 243, 243))
+			.GrowW();
+
+			titleBarGroup.Height = Scale(height);
+
+
+
+			// ============================================================
+			// 🌟 3. ATTACH HIT-TEST FILTERS (THIS FIXES EVERYTHING)
+			// ============================================================
+
+			// Make the whole title bar container transparent to hits → draggable
+			new SmartTransparentControlFilter(titleBarGroup);
+
+			//// Also make the icon and title labels transparent
+			new SmartTransparentControlFilter(lblIcon);
+			new SmartTransparentControlFilter(lblTitle);
+
+			// Make caption buttons transparent → so the Form can detect them
+			new SmartCaptionControlFilter(btnMin);
+			new SmartCaptionControlFilter(btnMax);
+			new SmartCaptionControlFilter(btnClose);
+
+			// If we have a resizing helper, bind the buttons and register interactive controls
+			if (_resizableHelper != null)
+			{
+				_resizableHelper.BindCaptionControls(titleBarGroup, btnMin, btnMax, btnClose);
+
+				// Center control (search box) must be interactive so it can get focus
+				if (centerControl != null)
+					_resizableHelper.AddInteractiveControl(centerControl);
+			}
+
+			// 4. (Optional) If your hamburger menu is placed inside the title bar, register it too
+			// For example, if you have a `hamburgerBtn` that lives inside titleBarGroup:
+			// _resizableHelper?.AddInteractiveControl(hamburgerBtn);
+
+			return titleBarGroup;
+		}
 		// --- BAŞLIK ÇUBUĞU PENCERE BUTONU YAPICI ---
 		private Button CreateCaptionButton(string icon, Action onClick, bool isClose = false)
 		{
@@ -556,11 +697,14 @@ namespace SmartLayoutEngine
 		}
 
 		// --- 🌟 TEK SATIRDA BOYUTLANDIRMA BAĞLANTISI ---
-		public void MakeFormResizable_v1(int borderSize = 8)
+		public void MakeFormResizable_v1(int borderSize = 8, bool smallCorners = false)
 		{
 			// NativeWindow sınıfını arka planda bu formun Hwnd'sine bağlar
-			new SmartFormResizable(_form, borderSize);
+			_resizableHelper = new SmartFormResizable(_form, borderSize, smallCorners);
 		}
+
+
+
 	}
 
 	// --- 🌟 WINDOWS 11 SEÇİM KUTUSU ÇİZİM SINIFI ---

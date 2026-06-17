@@ -34,7 +34,7 @@
 			// 
 			AutoScaleDimensions = new SizeF(8F, 20F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(800, 450);
+			ClientSize = new Size(800, 499);
 			Name = "frm_Components_example";
 			Text = "frm_Components_example";
 			Load += frm_Components_example_Load;
